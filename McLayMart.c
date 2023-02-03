@@ -1,7 +1,21 @@
+/* McLayMart - A inventory management system.
+
+Designed to be used with a barcode scanner to speed up process by entering information
+about where the items are to be used, who they are checked out by, and then scanning all
+the items that you want.  Then the system will send out an email detailing all the items checked out.
+
+by Brayden Storms 1-1-23
+
+*/
+
 #include "McLayMart.h"
 
-char * returnItemInfo(char * itemNumber);
-struct dataLine data[300];
+struct Part returnItemInfo(char * itemNumber);
+
+//Items are the stuff users are checking out
+struct Part *first_item;
+struct Part *current_item;
+struct Part *new_item;
 
 int main()
 {
@@ -32,17 +46,39 @@ int main()
     attroff(COLOR_PAIR(2));
     printw("%s", "Name:");
     getstr(name);
-
-    move(1,0);
-    printw("%s", "Cost Center or AFE #:");
-    getstr(costCenter);
+    deleteln();
+    refresh();
     
+    move(0,0);
+    //TODO make this part of the config file that has a list of the cost centers you want and the corresponding numbers
+    printw("%s", "Cost Center or AFE #");
+    char *choices[] = {"Kenai", "Cannery Loop", "Beaver Creek", "Ninilchik", "AFE #/Cost Center", NULL};
+    char * costCenters[] = {"90008120", "999908880", "123456789", "12234561111", NULL};
+    printList(1, choices);
+    printw("\nYour choice:");
+    refresh();
+    char choice[256];
+    getstr(choice);
+    //Custom choice
+    if(costCenters[atoi(choice)] == NULL)
+    {
+        clear();
+        mvprintw(0,0,"Enter AFE # or Cost Center:");
+        refresh();
+        getstr(costCenter);
+    }
+    else
+    {
+        strcpy(costCenter,costCenters[atoi(choice)]);
+    }
     clear();
     move(0,0);
-    printw("%s%s", "Name: ", name);
+    printw("Name:%s", name);
 
     move(0, 25);
-    printw("%s%s", "Cost Center: ", costCenter);
+    printw("Cost Center:%s", costCenter);
+    move(1,0);
+
 
 
     move(1,0);
@@ -71,11 +107,28 @@ int main()
         refresh();
 
         //This will return a string line with item# and description of item
-        strcpy(items[itemCount],returnItemInfo(item));
-        mvwprintw(sub_window_ptr, ++itemCount, 0, items[itemCount]);
+        //TODO: this will need to be seriously cleaned up with linked lists now.
+        
+        //Initiate first item in list     
+        if(first_item == NULL)
+        {
+            first_item = (struct Part *)malloc(sizeof(struct Part));
+            current_item = first_item;
+        }
+        *current_item = returnItemInfo(item);
+
+        //TODO need to check for part num as full and put a message to the user and beep!         
+
+        mvwprintw(sub_window_ptr, itemCount, 0, current_item->partNum);
+        mvwprintw(sub_window_ptr, ++itemCount, 25, current_item->partNum);
         wrefresh(sub_window_ptr);
         refresh();
+
+        new_item = (struct Part *)malloc(sizeof(struct Part));
+        current_item->next = new_item;
+        current_item = new_item; 
     } 
+    //Apparently the string length includes other things *shrug*
     while (strlen(item) != 25);
     erase();
     refresh();

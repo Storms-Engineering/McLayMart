@@ -1,7 +1,7 @@
 #Makefile for McLay Mart program
 
 McLayMart: McLayMart.o util.o
-	gcc McLayMart.o util.o -lcurses
+	gcc McLayMart.o util.o -o McLayMart -lcurses
 
 McLayMart.o: McLayMart.c util.c
 	gcc -c McLayMart.c -lcurses

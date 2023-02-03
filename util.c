@@ -1,6 +1,9 @@
 #include "McLayMart.h"
 
-extern struct dataLine data[300];
+struct Part *first_part;
+struct Part *current_part;
+struct Part *new_part;
+
 
 //Opens config file and reads parameters
 void readConfig()
@@ -16,22 +19,15 @@ void readConfig()
         printw("ERROR: data.csv not found, please provide a database file");
         move(1,0);
         printw("Exiting....");
+        refresh();
         sleep(3);
         //Exit with file does not exist status
         exit(ENOENT);
     }
     char line[BUFFSIZE];
-    int datPosition = 0;
-   
-    //Read in file line by line
-    while(fgets(line, BUFFSIZE, dataFile))
-    {
-        //Data is organized: DNOW (SAP) item #, Description, Part #
-        strcpy(data[datPosition].itemNum,strtok(line,","));
-        strcpy(data[datPosition].desc,strtok(NULL,","));
-        strcpy(data[datPosition].partNum,strtok(NULL,","));
-        datPosition++;
-    }
+
+
+    
     printw("Done");
     erase();
 }
@@ -43,35 +39,92 @@ void initDataFile()
     dataFile = fopen("data.csv", "r");
     if(!dataFile)
     {
-        erase();
-        move(0,0);
-        attrset(COLOR_PAIR(1));
-        printw("ERROR: data.csv not found, please provide a database file");
+        printError("ERROR: data.csv not found, please provide a database file");
         move(1,0);
         printw("Exiting....");
+        refresh();
         sleep(3);
         //Exit with file does not exist status
         exit(ENOENT);
     }
     char line[BUFFSIZE];
-    int datPosition = 0;
-   
+    first_part = (struct Part *)malloc(sizeof(struct Part));
+    current_part = first_part;
+
+
     //Read in file line by line
     while(fgets(line, BUFFSIZE, dataFile))
     {
         //Data is organized: DNOW (SAP) item #, Description, Part #
-        strcpy(data[datPosition].itemNum,strtok(line,","));
-        strcpy(data[datPosition].desc,strtok(NULL,","));
-        strcpy(data[datPosition].partNum,strtok(NULL,","));
-        datPosition++;
+        strcpy(current_part->itemNum,strtok(line,","));
+        strcpy(current_part->desc,strtok(NULL,","));
+        strcpy(current_part->partNum,strtok(NULL,","));
+
+        new_part = (struct Part *)malloc(sizeof(struct Part));
+        current_part->next = new_part;
+        current_part = new_part;        
     }
+    current_part->next = NULL;
+
     printw("Done");
     erase();
 }
 
-//Dummy function for now
-char * returnItemInfo(char* itemNumber)
+//Returns the part struct for the corresponding item #
+//Returns null in itemNum if item cannot be found
+struct Part returnItemInfo(char* itemNumber)
 {
-    
-    return strcat(itemNumber,"              Description");
+    struct Part tmpPart;
+    //start at the beginning
+    current_part = first_part;
+    while(current_part)
+    {
+        if(!strcasecmp(itemNumber,current_part->itemNum) || !strcasecmp(itemNumber,current_part->partNum))
+        {
+            tmpPart = *current_part;
+            break;
+        }
+        current_part = current_part->next;
+        if(!current_part)
+        {
+            printw("Item not found!");
+            refresh();
+            //Item not found.
+            strcpy(tmpPart.itemNum,"NULL");
+        }
+        //printw(current_part->desc);
+    }
+    return tmpPart;
+}
+
+void printList(int startLine, char * choices[])
+{
+    //puts(choices[1]);
+    int i = 0;
+    while(choices[i])
+    {
+        mvprintw(startLine + i,0,"(%i) ", i );
+        printw(choices[i]);
+        i++;
+    }
+}
+
+void printError(char * errMsg)
+{
+    erase();
+    move(0,0);
+    attrset(COLOR_PAIR(1));
+    printw(errMsg);
+}
+
+//Puts a message in the status bar
+//Types of messages include: ERR, INFO, ALERT
+void msg(char * msg)
+{
+    move(MSGLINENUM,0);
+    deleteln();
+
+    printw(msg);
+    beep();
+    refresh();
 }

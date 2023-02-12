@@ -27,16 +27,20 @@ int main()
     initscr();
     start_color();
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2,COLOR_BLUE, COLOR_BLACK);
+    init_pair(2,COLOR_YELLOW, COLOR_BLACK);
     init_pair(3,COLOR_RED, COLOR_BLACK);
+    init_pair(4,COLOR_BLUE, COLOR_BLACK);
+    
+    
 
     initDataFile();
 
     move(5,15);
     printw("%s", "Welcome to McClay Mart!");
     move(6,15);
-    attrset(COLOR_PAIR(2));
+    attrset(COLOR_PAIR(4));
     printw("Developed by Storms-Engineering");
+    beep();
     refresh();
     sleep(1);
     clear();
@@ -48,7 +52,6 @@ int main()
     getstr(name);
     deleteln();
     refresh();
-    
     move(0,0);
     //TODO make this part of the config file that has a list of the cost centers you want and the corresponding numbers
     printw("%s", "Cost Center or AFE #");
@@ -77,21 +80,14 @@ int main()
 
     move(0, 25);
     printw("Cost Center:%s", costCenter);
-    move(1,0);
 
-
-
-    move(1,0);
-    attrset(COLOR_PAIR(1));
-    printw("%s", "Please Begin scanning");
-
-    attroff(COLOR_PAIR(1));
-
-    sub_window_ptr = subwin(stdscr, 40,200,2,0);
+    msg("Please begin scanning", MSGLVL_INFO);
+    mvprintw(2, 0, "Item #:                  Description:");
+    mvprintw(3,0,  "-------------------------------------");
+    sub_window_ptr = subwin(stdscr, 40,200,4,0);
     scrollok(sub_window_ptr, 1);
 
     touchwin(stdscr);
-    mvwprintw(sub_window_ptr, 0, 0, "Item #:             Description:");
     wrefresh(sub_window_ptr);
     refresh();
     int itemCount = 0;
@@ -106,9 +102,6 @@ int main()
         deleteln();
         refresh();
 
-        //This will return a string line with item# and description of item
-        //TODO: this will need to be seriously cleaned up with linked lists now.
-        
         //Initiate first item in list     
         if(first_item == NULL)
         {
@@ -117,10 +110,12 @@ int main()
         }
         *current_item = returnItemInfo(item);
 
-        //TODO need to check for part num as full and put a message to the user and beep!         
+        //If part doesn't exist, skip the rest and start over
+        if(strcmp(current_item->itemNum,"NULL") == 0)
+            continue;
 
         mvwprintw(sub_window_ptr, itemCount, 0, current_item->partNum);
-        mvwprintw(sub_window_ptr, ++itemCount, 25, current_item->partNum);
+        mvwprintw(sub_window_ptr, itemCount++, 25, current_item->desc);
         wrefresh(sub_window_ptr);
         refresh();
 

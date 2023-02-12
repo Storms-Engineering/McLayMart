@@ -82,13 +82,13 @@ struct Part returnItemInfo(char* itemNumber)
         if(!strcasecmp(itemNumber,current_part->itemNum) || !strcasecmp(itemNumber,current_part->partNum))
         {
             tmpPart = *current_part;
+            msg("Item found", MSGLVL_INFO);
             break;
         }
         current_part = current_part->next;
         if(!current_part)
         {
-            printw("Item not found!");
-            refresh();
+            msg("Item not found!", MSGLVL_ERR);
             //Item not found.
             strcpy(tmpPart.itemNum,"NULL");
         }
@@ -119,12 +119,18 @@ void printError(char * errMsg)
 
 //Puts a message in the status bar
 //Types of messages include: ERR, INFO, ALERT
-void msg(char * msg)
+//Err is red and is meant for critical things
+//Info is green and are good status messages
+//Alert is yellow and means something of note
+void msg(char * msg, int msgLvl)
 {
     move(MSGLINENUM,0);
     deleteln();
-
+    insertln();
+    attrset(COLOR_PAIR(msgLvl));
     printw(msg);
-    beep();
+    attroff(COLOR_PAIR(msgLvl));
+    if(msgLvl > 1)
+        beep();
     refresh();
 }

@@ -16,13 +16,14 @@ struct Part returnItemInfo(char * itemNumber);
 struct Part *first_item;
 struct Part *current_item;
 struct Part *new_item;
+char name[256],costCenter[256], items[256][256];
 
 int main()
 {
     
     WINDOW *sub_window_ptr;
     
-    char name[256],costCenter[256], items[256][256];
+    
     //Curses init
     initscr();
     start_color();
@@ -30,8 +31,6 @@ int main()
     init_pair(2,COLOR_YELLOW, COLOR_BLACK);
     init_pair(3,COLOR_RED, COLOR_BLACK);
     init_pair(4,COLOR_BLUE, COLOR_BLACK);
-    
-    
 
     initDataFile();
 
@@ -45,99 +44,121 @@ int main()
     sleep(1);
     clear();
 
-
-    move(0,0);
-    attroff(COLOR_PAIR(2));
-    printw("%s", "Name:");
-    getstr(name);
-    deleteln();
-    refresh();
-    move(0,0);
-    //TODO make this part of the config file that has a list of the cost centers you want and the corresponding numbers
-    printw("%s", "Cost Center or AFE #");
-    char *choices[] = {"Kenai", "Cannery Loop", "Beaver Creek", "Ninilchik", "AFE #/Cost Center", NULL};
-    char * costCenters[] = {"90008120", "999908880", "123456789", "12234561111", NULL};
-    printList(1, choices);
-    printw("\nYour choice:");
-    refresh();
-    char choice[256];
-    getstr(choice);
-    //Custom choice
-    if(costCenters[atoi(choice)] == NULL)
+    //Main loop
+    while(true)
     {
-        clear();
-        mvprintw(0,0,"Enter AFE # or Cost Center:");
-        refresh();
-        getstr(costCenter);
-    }
-    else
-    {
-        strcpy(costCenter,costCenters[atoi(choice)]);
-    }
-    clear();
-    move(0,0);
-    printw("Name:%s", name);
-
-    move(0, 25);
-    printw("Cost Center:%s", costCenter);
-
-    msg("Please begin scanning", MSGLVL_INFO);
-    mvprintw(2, 0, "Item #:                  Description:");
-    mvprintw(3,0,  "-------------------------------------");
-    sub_window_ptr = subwin(stdscr, 40,200,4,0);
-    scrollok(sub_window_ptr, 1);
-
-    touchwin(stdscr);
-    wrefresh(sub_window_ptr);
-    refresh();
-    int itemCount = 0;
-    char item[256];
-    do
-    {
-        move(50,0);
-        printw("Item #:");
-        //Adding items
-        getstr(item);
-        move(50,0);
+        move(0,0);
+        attroff(COLOR_PAIR(2));
+        printw("%s", "Name:");
+        getstr(name);
         deleteln();
         refresh();
-
-        //Initiate first item in list     
-        if(first_item == NULL)
+        move(0,0);
+        //TODO make this part of the config file that has a list of the cost centers you want and the corresponding numbers
+        printw("%s", "Cost Center or AFE #");
+        char *choices[] = {"Kenai Gas Field", "Cannery Loop", "Beaver Creek", "Ninilchik", "AFE #/Cost Center", NULL};
+        char * costCenters[] = {"900000202", "999908880", "123456789", "12234561111", NULL};
+        printList(1, choices);
+        printw("\nYour choice:");
+        refresh();
+        char choice[256];
+        getstr(choice);
+        //Custom choice
+        if(costCenters[atoi(choice)] == NULL)
         {
-            first_item = (struct Part *)malloc(sizeof(struct Part));
-            current_item = first_item;
+            clear();
+            mvprintw(0,0,"Enter AFE # or Cost Center:");
+            refresh();
+            getstr(costCenter);
         }
-        *current_item = returnItemInfo(item);
+        else
+        {
+            strcpy(costCenter,costCenters[atoi(choice)]);
+        }
+        clear();
+        move(0,0);
+        printw("Name:%s", name);
 
-        //If part doesn't exist, skip the rest and start over
-        if(strcmp(current_item->itemNum,"NULL") == 0)
-            continue;
+        move(0, 25);
+        printw("Cost Center:%s", costCenter);
 
-        mvwprintw(sub_window_ptr, itemCount, 0, current_item->partNum);
-        mvwprintw(sub_window_ptr, itemCount++, 25, current_item->desc);
+        msg("Please begin scanning", MSGLVL_INFO);
+        mvprintw(2, 0, "Item #:                  Description:");
+        mvprintw(3,0,  "-------------------------------------");
+        sub_window_ptr = subwin(stdscr, 40,200,4,0);
+        //scrollok(sub_window_ptr, 1);
+
+        touchwin(stdscr);
         wrefresh(sub_window_ptr);
         refresh();
-
-        new_item = (struct Part *)malloc(sizeof(struct Part));
-        current_item->next = new_item;
-        current_item = new_item; 
-    } 
-    //Apparently the string length includes other things *shrug*
-    while (strlen(item) != 25);
-    erase();
-    refresh();
-
-
-    //Curses destructor
+        int itemCount = 0;
+        char item[256];
+        do
+        {
+            move(50,0);
+            printw("Item #:");
+            //Adding items
+            getstr(item);
+            strcpy(item,removeChar(item, '-'));
+            move(50,0);
+            deleteln();
+            refresh();
+            //Initiate first item in list     
+            if(first_item == NULL)
+            {
+                first_item = (struct Part *)malloc(sizeof(struct Part));
+                current_item = first_item;
+            }
+            *current_item = returnItemInfo(item);
+            //If part doesn't exist, skip the rest and start over
+            if(strcmp(current_item->itemNum,"NULL") == 0)
+                continue;
+            mvwprintw(sub_window_ptr, itemCount, 0, current_item->partNum);
+            mvwprintw(sub_window_ptr, itemCount++, 25, current_item->desc);
+            wrefresh(sub_window_ptr);
+            refresh();
+            new_item = (struct Part *)malloc(sizeof(struct Part));
+            current_item->next = new_item;
+            current_item = new_item; 
+        } 
+        //Apparently the string length includes other things *shrug*
+        while (strlen(item) != 25);
+        erase();
+        //Curses destructor
+        printw("Updating checked out item database......");
+        updateDatabase();
+        refresh();
+    }
     
-    attron(A_BLINK | A_REVERSE);
-    printw("END OF THE LINE.....\n");
-    refresh();
-    sleep(5);
 
     endwin();
     exit(EXIT_SUCCESS);
+}
+
+void updateDatabase()
+{
+    FILE *checkoutDB;
+    checkoutDB = fopen("checkoutDB.csv","a");
+    
+    if(!checkoutDB)
+    {
+        msg(MSGLVL_ERR,"CRITICAL ERROR WITH CHECKOUT DB.... ALERT THE MASTER!");
+    }
+    struct Part *prev_item;
+    //start at the beginning
+    current_item = first_item;
+    while(current_item)
+    {
+        //Data is organized: DNOW (SAP) item #, Description, Part #, Name, Cost Center
+        fprintf(checkoutDB,"%s,%s,%s,%s,%s\n", current_item->itemNum, current_item->desc, current_item->desc, name, costCenter);
+        prev_item = current_item;
+        current_item = current_item->next;
+        //Start cleaning up memory
+        free(prev_item);
+    }
+    //Free the first item
+    free(first_item);
+    fclose(checkoutDB);
 }
 
 

@@ -12,6 +12,8 @@ void readConfig();
 void printList(int startLine, char * choices[]);
 void printError(char * errMsg);
 void msg(char *, int msgLevel);
+char *removeChar(char * origString, char toRemove);
+void updateDatabase();
 
 //Defines
 #define BUFFSIZE 10000

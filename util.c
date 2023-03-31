@@ -92,7 +92,6 @@ struct Part returnItemInfo(char* itemNumber)
             //Item not found.
             strcpy(tmpPart.itemNum,"NULL");
         }
-        //printw(current_part->desc);
     }
     return tmpPart;
 }
@@ -134,3 +133,22 @@ void msg(char * msg, int msgLvl)
         beep();
     refresh();
 }
+
+//Takes a string and modifies it so that the original string does not contain the character specified toRemove and returns it
+//Could be upgraded to remove a string instead of a character by using strlen and looking through blocks at a time
+char *removeChar(char * origString, char toRemove)
+{
+    static char tmpString[256];
+    int i = 0;
+    while(*origString)
+    {
+        if(*origString != toRemove)
+        {
+            tmpString[i] = *origString;
+            i++;
+        } 
+        origString++;
+    }
+    return tmpString;
+}
+

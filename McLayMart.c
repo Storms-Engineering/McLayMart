@@ -47,6 +47,8 @@ int main()
     //Main loop
     while(true)
     {
+        //This clear is needed for when we loop 
+        clear();
         move(0,0);
         attroff(COLOR_PAIR(2));
         printw("%s", "Name:");
@@ -57,7 +59,7 @@ int main()
         //TODO make this part of the config file that has a list of the cost centers you want and the corresponding numbers
         printw("%s", "Cost Center or AFE #");
         char *choices[] = {"Kenai Gas Field", "Cannery Loop", "Beaver Creek", "Ninilchik", "AFE #/Cost Center", NULL};
-        char * costCenters[] = {"900000202", "999908880", "123456789", "12234561111", NULL};
+        char * costCenters[] = {"9100000202", "999908880", "123456789", "12234561111", NULL};
         printList(1, choices);
         printw("\nYour choice:");
         refresh();
@@ -117,8 +119,8 @@ int main()
             //If part doesn't exist, skip the rest and start over
             if(strcmp(current_item->itemNum,"NULL") == 0)
                 continue;
-            mvwprintw(sub_window_ptr, itemCount, 0, current_item->partNum);
-            mvwprintw(sub_window_ptr, itemCount++, 25, current_item->desc);
+            mvwprintw(sub_window_ptr, itemCount, 0, "%s",current_item->partNum);
+            mvwprintw(sub_window_ptr, itemCount++, 25, "%s", current_item->desc);
             wrefresh(sub_window_ptr);
             refresh();
             new_item = (struct Part *)malloc(sizeof(struct Part));
@@ -132,8 +134,8 @@ int main()
             msg(size,MSGLVL_INFO);*/
             
         } 
-        //Apparently the string length includes other things *shrug*
         while (true);
+        //Apparently the string length includes other things *shrug*
         erase();
         //Curses destructor
         printw("Updating checked out item database......");
@@ -165,7 +167,7 @@ void updateDatabase()
         prev_item = current_item;
         current_item = current_item->next;
         //Start cleaning up memory
-        free(prev_item);
+       // free(prev_item);
     }
     //Free the first itemr
     free(first_item);

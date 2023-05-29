@@ -79,7 +79,7 @@ struct Part returnItemInfo(char* itemNumber)
     current_part = first_part;
     while(current_part)
     {
-        if(!strcasecmp(itemNumber,current_part->itemNum) || !strcasecmp(itemNumber,current_part->partNum))
+        if(strcasecmp(itemNumber,current_part->itemNum) == 0 || strcasecmp(itemNumber,current_part->partNum) == 0)
         {
             tmpPart = *current_part;
             msg("Item found", MSGLVL_INFO);

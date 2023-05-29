@@ -95,10 +95,14 @@ int main()
         char item[256];
         do
         {
+            strcpy(item,"");
             move(50,0);
             printw("Item #:");
             //Adding items
             getstr(item);
+            //Done with adding items
+            if(strlen(item) == 0)
+                break;
             strcpy(item,removeChar(item, '-'));
             move(50,0);
             deleteln();
@@ -119,15 +123,22 @@ int main()
             refresh();
             new_item = (struct Part *)malloc(sizeof(struct Part));
             current_item->next = new_item;
-            current_item = new_item; 
+            current_item = new_item;
+            //erase();
+            refresh();
+            
+            /*char * size = (char *)strlen(item);
+            strcat(size,"long");
+            msg(size,MSGLVL_INFO);*/
+            
         } 
         //Apparently the string length includes other things *shrug*
-        while (strlen(item) != 25);
+        while (true);
         erase();
         //Curses destructor
         printw("Updating checked out item database......");
-        updateDatabase();
         refresh();
+        updateDatabase();
     }
     
 
@@ -142,7 +153,7 @@ void updateDatabase()
     
     if(!checkoutDB)
     {
-        msg(MSGLVL_ERR,"CRITICAL ERROR WITH CHECKOUT DB.... ALERT THE MASTER!");
+        msg("CRITICAL ERROR WITH CHECKOUT DB.... ALERT THE MASTER!",MSGLVL_ERR);
     }
     struct Part *prev_item;
     //start at the beginning
@@ -156,7 +167,7 @@ void updateDatabase()
         //Start cleaning up memory
         free(prev_item);
     }
-    //Free the first item
+    //Free the first itemr
     free(first_item);
     fclose(checkoutDB);
 }
